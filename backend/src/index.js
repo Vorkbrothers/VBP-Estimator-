@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const bidsRouter = require('./routes/bids');
 const documentsRouter = require('./routes/documents');
@@ -11,11 +12,24 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Serve built frontend if it exists
+const FRONTEND_DIST = path.join(__dirname, '..', '..', 'frontend', 'dist');
+if (fs.existsSync(FRONTEND_DIST)) {
+  app.use(express.static(FRONTEND_DIST));
+}
+
 app.use('/api/bids', bidsRouter);
 app.use('/api/bids/:bidId/documents', documentsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Serve frontend for all non-API routes (SPA fallback)
+if (fs.existsSync(FRONTEND_DIST)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+  });
+}
 
 // Multer error handler
 app.use((err, req, res, next) => {
