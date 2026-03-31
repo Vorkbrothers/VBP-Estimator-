@@ -7,7 +7,9 @@ const db = require('../db');
 
 const router = express.Router({ mergeParams: true });
 
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
+const UPLOAD_DIR = process.env.DATA_PATH
+  ? path.join(process.env.DATA_PATH, 'uploads')
+  : path.join(__dirname, '..', '..', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
